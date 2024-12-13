@@ -4,7 +4,7 @@ appId=  # 应用id/
 key=""  # access_key
 secret=""  # access_key_secret
 
-# 发送弹幕功能需要用到一下参数
+# 发送弹幕功能需要用到以下参数
 csrf_token = ""
 cookie = ""
 roomid = "" # 房间id号
