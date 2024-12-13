@@ -27,6 +27,15 @@ python receive_msg.py
 - 直播使用obs或直播姬
 
 ### 获取csrf_token,cookie
+- 打开自己直播间，按下f12，查看network
+  检索关键字检索send。手动发送一个弹幕。
+  这时会跳出来一个请求，查看这个请求的payload。里面有csrf_token如图
+  
+![image](https://github.com/user-attachments/assets/19ad5024-4877-4d26-ae4b-1f07012c949b)
+- 在headers可以找到cookie如图
+
+![image](https://github.com/user-attachments/assets/d1cd8190-f0e2-4a73-92e2-35efc9799f0a)
+
 
 
 
