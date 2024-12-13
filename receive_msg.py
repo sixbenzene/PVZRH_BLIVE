@@ -253,6 +253,7 @@ async def receive(websocket):
             recvBuf = await websocket.recv()
         except:
             logger.error("receive_error:","可能网络连接问题")
+            time.sleep(5)
             continue
         item = resp_pro.unpack(recvBuf)
         if item==None:
@@ -289,6 +290,7 @@ async def receive(websocket):
                     msg_queue.put({"uname":item['data']['uname'],"msg":"樱桃二爷僵尸"})
 
 def main():
+
     cli = BiliClient(
         idCode=config.idCode,  # 主播身份码
         appId=config.appId,  # 应用id/
@@ -313,6 +315,11 @@ if __name__ == "__main__":
     pvzcheat = PvzCheat()
     with pvzcheat:
         threading.Thread(target=start,args = (pvzcheat,),daemon = True).start()
-        main()
+        try:
+            main()
+        except Exception as e:
+            print(e)
+            print(traceback.format_exc())
+            temp = input("参数填写错误,按下enter键释放内存资源。。。")
     
 
