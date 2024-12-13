@@ -6,7 +6,7 @@
 
 ### 前置要求
 - b站获取主播身份码，应用id，access_key,access_key_secret. 后三项需要申请开发者入驻
-- csrf_token,cookie,和roomid.前两项的教程[点击这里]
+- csrf_token,cookie,和roomid.前两项的教程[点击这里](https://github.com/sixbenzene/PVZRH_BLIVE?tab=readme-ov-file#%E8%8E%B7%E5%8F%96csrf_tokencookie)
 ### 如何开始
 - 拉取代码
 ```
