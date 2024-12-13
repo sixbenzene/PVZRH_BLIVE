@@ -22,7 +22,7 @@ pip install -r requirements.txt
 - 在[releases](https://github.com/sixbenzene/PVZRH_BLIVE/releases/tag/pvzRH)下载植物大战僵尸v2.1.3压缩包
 打开植物大战僵尸，进入我是僵尸模式，开启自动斗蛐蛐
 ```
-python receiv_msg.py
+python receive_msg.py
 ```
 - 直播使用obs或直播姬
 
