@@ -45,12 +45,12 @@ import tkinter as tk
 def get_usr_list():
     url = "https://api.live.bilibili.com/xlive/general-interface/v1/rank/queryContributionRank"
     headers = {
-        "cookie":"buvid3=51091490-8A8B-57CB-876D-B7367411600C48462infoc; b_nut=1725001548; _uuid=C23FE1C4-E5CE-1AD3-8EAE-ABA3EB810355349032infoc; enable_web_push=DISABLE; buvid4=ABE94ED3-B857-FC8C-0E40-BE7BADC1C73E49665-024083007-Yr3%2BhwNCoNYsJzhazPiuoQ%3D%3D; header_theme_version=CLOSE; CURRENT_FNVAL=4048; LIVE_BUVID=AUTO7817253382566032; rpdid=|(ummlmkm||R0J'u~kYRYmuuY; buvid_fp_plain=undefined; DedeUserID=106135359; DedeUserID__ckMd5=041f270fdaee988e; home_feed_column=5; browser_resolution=1920-957; CURRENT_QUALITY=80; bp_t_offset_106135359=996284713041657856; fingerprint=147f1a4fca00c5ac5b1444f7bdf5cbbf; bili_ticket=eyJhbGciOiJIUzI1NiIsImtpZCI6InMwMyIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MzEyMzU2NzAsImlhdCI6MTczMDk3NjQxMCwicGx0IjotMX0.lO9rrbo-w1s_SvYCoIvtxttjgYF0VXm9Q_yPGogYpeQ; bili_ticket_expires=1731235610; SESSDATA=f805bfe1%2C1746538856%2C8d8f5%2Ab2CjDRUfNvGcwX8JbGn-Rc_Wb0hAjdvXpGi8-j5gG0vcVUjsBA4GIELz7_Pz52-wjjP9oSVm5PTVZTOTRRWnhsbXpYcjBoYUlDeWJjMExLZm9kR0FaZEFWdk9NN1BSc19FYllBVzhGeUVjZFNKZ0JuR2g1dzV0ZUJDZm12eDBPbmI5MjlYcXA5dTNRIIEC; bili_jct=acc38c5eb6532498f0f5148d222ae3af; sid=826iwrno; b_lsid=BB1E39B2_1930F6BC464; PVID=2; buvid_fp=147f1a4fca00c5ac5b1444f7bdf5cbbf",
+        "cookie":config.cookie,
         "user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
     }
     params = {
         "ruid":106135359,
-        "room_id" : 4638098,
+        "room_id" : config.room_id,
         "page_size":100,
         "type":"online_rank",
         "page":1,
