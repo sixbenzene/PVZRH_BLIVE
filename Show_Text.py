@@ -12,8 +12,8 @@ import json
 import os
 import uuid
 
-from playsound import playsound
-from nls_tts import TestTts
+# from playsound import playsound
+# from nls_tts import TestTts
 class Show_Text:
 
     def __init__(self):
@@ -75,18 +75,19 @@ class Show_Text:
     def change_text(self,label,text):
         label.config(text=text)
         self.root.update()
-
-    def play_sound_file(self,text):
-        UUID = str(uuid.uuid4())
-        mp3_file = f"audio_temp/{UUID}.mp3"
-        t = TestTts(UUID, mp3_file)
-        t.start(text)
-        playsound(mp3_file)
-        os.remove(mp3_file)
-    def text2voice(self,text):
-        if text != self.update_sound_text:
-            self.update_sound_text = text
-            threading.Thread(target=self.play_sound_file,args=(text,)).start()
+    
+    # 播放语音，暂不支持
+    # def play_sound_file(self,text):
+    #     UUID = str(uuid.uuid4())
+    #     mp3_file = f"audio_temp/{UUID}.mp3"
+    #     t = TestTts(UUID, mp3_file)
+    #     t.start(text)
+    #     playsound(mp3_file)
+    #     os.remove(mp3_file)
+    # def text2voice(self,text):
+    #     if text != self.update_sound_text:
+    #         self.update_sound_text = text
+    #         threading.Thread(target=self.play_sound_file,args=(text,)).start()
 
     def main_show(self):
         root_1 = tk.Tk()
@@ -114,7 +115,7 @@ class Show_Text:
                 if not self.maintext_queue.empty():
                     self.start_time = time.time()
                     self.msg = self.maintext_queue.get()
-                    self.text2voice(self.msg)
+                    # self.text2voice(self.msg)
             self.end_time = time.time()
             total_text = self.guess_win_text + self.msg
             label.config(text=total_text)
