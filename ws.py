@@ -10,7 +10,7 @@ from hashlib import sha256
 import proto
 import os
 # 该示例仅为demo，如需使用在生产环境需要自行按需调整
-
+# test
 
 class BiliClient:
     def __init__(self, idCode, appId, key, secret, host):
