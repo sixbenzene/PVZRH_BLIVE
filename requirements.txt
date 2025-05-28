@@ -1,3 +1,0 @@
-pymem==1.14.0
-requests==2.32.3
-websockets==14.1
