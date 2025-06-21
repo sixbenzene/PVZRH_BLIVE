@@ -1,10 +1,10 @@
-idCode = "E1P62JMCYQRK9"
-appId=1733022254287
-key="LNorYk0KmMbs92lEqgrqC4vz"
-secret="onoCyO99ZidlqqlcBNOnFiSGtdqY85"
+idCode = ""
+appId=
+key=""
+secret=""
 host="https://live-open.biliapi.com"
-room_id = 4638098
-ruid = 106135359
+room_id = 
+ruid = 
 
-csrf_token = 'beeb0b14195f6de04d26d8ca36b3177a'
-cookie = "buvid3=51091490-8A8B-57CB-876D-B7367411600C48462infoc; b_nut=1725001548; _uuid=C23FE1C4-E5CE-1AD3-8EAE-ABA3EB810355349032infoc; enable_web_push=DISABLE; buvid4=ABE94ED3-B857-FC8C-0E40-BE7BADC1C73E49665-024083007-Yr3%2BhwNCoNYsJzhazPiuoQ%3D%3D; header_theme_version=CLOSE; LIVE_BUVID=AUTO7817253382566032; rpdid=|(ummlmkm||R0J'u~kYRYmuuY; buvid_fp_plain=undefined; DedeUserID=106135359; DedeUserID__ckMd5=041f270fdaee988e; CURRENT_QUALITY=80; enable_feed_channel=ENABLE; fingerprint=66a38ea9f70d05e53976fed76efa5a76; buvid_fp=66a38ea9f70d05e53976fed76efa5a76; home_feed_column=5; browser_resolution=1920-957; PVID=1; bili_ticket=eyJhbGciOiJIUzI1NiIsImtpZCI6InMwMyIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTA2NTI5MDEsImlhdCI6MTc1MDM5MzY0MSwicGx0IjotMX0.IB0qbqlBrTMiEYdN43lBqIY3a4Ptvw4J7DeGEJzaW3k; bili_ticket_expires=1750652841; SESSDATA=cb472a56%2C1765945702%2Cf6599%2A62CjCBcAf6_n8FT9ahU5JvDd-N_OQITXUPyBrT1ZrTYJ4Hb54AWFnrBlLzYzEWdDci8kcSVnBDNzJ0QnpMME52dzB4TFBXUlBnUWNvMG5BcGxkaF96MVF2ejZVSmk2TXpHdFJaOFpOeFNXWjJ4LUJ0eTRNWU9uNFpxR3ZPLVlpWlY3NTBoUi1hSGJRIIEC; bili_jct=beeb0b14195f6de04d26d8ca36b3177a; bp_t_offset_106135359=1080448690310610944; CURRENT_FNVAL=4048; b_lsid=1AA2FF6A_1978C8D14E8; Hm_lvt_8a6e55dbd2870f0f5bc9194cddf32a02=1750409771; Hm_lpvt_8a6e55dbd2870f0f5bc9194cddf32a02=1750409771; HMACCOUNT=1BE070FE17F4278E"
+csrf_token = ''
+cookie = ""
