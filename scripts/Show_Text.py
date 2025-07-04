@@ -119,7 +119,7 @@ class Show_Text:
         self.time_step = 0
         label = tk.Label(root_1,text=" ",font=("Microsoft YaHei", 50,"bold"),fg='#5be1f9',bg="black")
         label.place(relx=0.5,rely=0.5,anchor='center')
-        self.play_prompt = "1.输入“签到”领阳光  2.输入“查询”查询阳光  3.输入“入座x路”入座  4.输入“离座”离座  5.输入p+数字放置随机礼盒  6.以“清哥”开头有回应(暂时无法使用)  7.t+数字铲除植物  8.五个点赞一列普通僵尸           "
+        self.play_prompt = "1.输入“签到”领阳光  2.输入“查询”查询阳光  3.输入“入座x路”入座  4.输入“离座”离座  5.输入p+数字放置随机礼盒  6.以“清哥”开头有回应(暂时无法使用)  7.t+数字铲除植物  8.五个点赞一列普通僵尸  9.在右置位入座的输入z+数字放置僵尸           "
         # self.play_prompt = "1.输入“签到”领阳光  2.输入“查询”查询阳光  3.输入“入座x路”入座  4.输入“离座”离座  5.h+数字放置礼盒  6.以“清哥”开头有回应  7.t+数字更换植物  8.僵尸需要礼物触发  9.一个点赞5阳光，5个点赞放置一波僵尸最高点赞1000次  10.僵尸触发挡位为每增加1电池，放置越高级的僵尸  11.僵尸组直接输入字母就行  12.僵尸组的获胜奖励开发中。。。             "
         label_2 = tk.Label(root_1,text=self.play_prompt,font=("Microsoft YaHei", 25,"bold"),fg='#ff0475',bg="#ffaef1")
         label_2.place(relx = 0.5,y = 28,anchor='center')

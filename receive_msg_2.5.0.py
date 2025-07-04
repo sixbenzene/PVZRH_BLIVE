@@ -52,9 +52,10 @@ def get_usr_list():
         usr_list = []
     return usr_list
 
-def check_usrs(sit_down_usr,show_text):
+def check_usrs(show_text):
     while True:
         try:
+            sit_down_usr = show_text.usr_dict.copy()
             usr_list = get_usr_list()
             time.sleep(10)
             if len(usr_list) == 0:
@@ -131,7 +132,7 @@ def start(pvzcheat):
     blive_usr = SqlControl()
     like_count = 0
     # 保证入座用户在直播间
-    threading.Thread(target=check_usrs, args = (show_text.usr_dict,show_text),daemon=True).start()
+    threading.Thread(target=check_usrs, args = (show_text，),daemon=True).start()
     # 每秒检测是否有玩家获胜
     threading.Thread(target=check_win, args = (pvzcheat,show_text),daemon=True).start()
     while True:
@@ -149,7 +150,7 @@ def start(pvzcheat):
                     show_text.maintext_queue.put(f"{usr}触发普通僵尸")
                 if item['cmd'] == 'LIVE_OPEN_PLATFORM_LIVE_ROOM_ENTER':
                     logger.info(f"{item['data']['uname']} 进入直播间")
-                    show_text.text2voice(f"欢迎{usr}进入直播间")
+                    show_text.text2voice(f"欢迎{item['data']['uname']}进入直播间")
                 if item['cmd'] == 'RESET':
                     pvzcheat.select_zp_to_board()
                 
@@ -164,19 +165,29 @@ def start(pvzcheat):
                 instruct = instruct.replace(" ","")
                 remain_sun = blive_usr.search_usr(usr)
                 if len(instruct)>0 and instruct[1:3].isdigit():
-                    if remain_sun<100:
-                        show_text.maintext_queue.put(f"{usr}\n阳光不足")
-                        continue
-                    elif usr not in show_text.usr_dict:
+                    position_num = int(instruct[1:3])
+                    usr_seat = int(show_text.usr_dict.get(usr, -1))
+                    if usr_seat == -1:
                         show_text.maintext_queue.put(f"{usr}\n未入座，不允许操作")
-                    elif (int(instruct[1:3])//10)+(0!=(int(instruct[1:3])%10)) != int(show_text.usr_dict[usr]):
-                        show_text.maintext_queue.put(f"{usr}\n请操作自己那一路")
-                    elif instruct[0]=="t":
-                        # blive_usr.update_data(usr,remain_sun-100)
-                        pvzcheat.shovel_plants(instruct[1:3])
-                    elif instruct[0]=="p":
-                        blive_usr.update_data(usr,remain_sun-100)
-                        pvzcheat.plant_plants(256,instruct[1:3])
+                        break
+                    elif usr_seat <=5:
+                        if remain_sun<100:
+                            show_text.maintext_queue.put(f"{usr}\n阳光不足")
+                            break
+                        elif (position_num//10)+(0!=(position_num%10)) != int(show_text.usr_dict[usr]):
+                            show_text.maintext_queue.put(f"{usr}\n请操作自己那一路")
+                        elif instruct[0]=="t":
+                            # blive_usr.update_data(usr,remain_sun-100)
+                            pvzcheat.shovel_plants(instruct[1:3])
+                        elif instruct[0]=="p":
+                            blive_usr.update_data(usr,remain_sun-100)
+                            pvzcheat.plant_plants(256,instruct[1:3])
+                    else:
+                        if (position_num//10)+(0!=(position_num%10)) != int(show_text.usr_dict[usr])-5:
+                            show_text.maintext_queue.put(f"{usr}\n请操作自己那一路")
+                        elif instruct[0] == 'z':
+                            # blive_usr.update_data(usr,remain_sun-100)
+                            pvzcheat.plant_zombie(21,instruct[1:3])
             if danmu == "签到":
                 status = blive_usr.sign_in(usr)
                 if status == True:
