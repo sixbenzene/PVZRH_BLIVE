@@ -1,0 +1,6 @@
+websockets
+requests
+pymem
+keyboard
+playsound==1.2.2
+edge_tts
