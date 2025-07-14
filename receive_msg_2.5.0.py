@@ -1,6 +1,7 @@
 from queue import Queue
 import threading 
 import traceback
+import requests
 import logging
 import asyncio
 import config 
@@ -75,7 +76,7 @@ def check_usrs(show_text):
             # print(usr_list)
             for usr,status in sit_down_usr.items():
                 if usr not in usr_list:
-                    showtext.stand_up(usr,"离")
+                    show_text.stand_up(usr,"离")
 
         except Exception as e:
             logger.error(traceback.format_exc())
