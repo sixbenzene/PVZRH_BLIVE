@@ -14,13 +14,11 @@ from scripts.Show_Text import Show_Text
 from scripts.SqlControl import SqlControl
 from scripts.send_msg import send_danmu
 
-resp_pro = Proto()
-receive_queue = Queue() # 接收到的消息队列
 
 logger = logging.getLogger("receive_msg")
 logger.setLevel(logging.DEBUG)
 
-file_handler = logging.FileHandler("data/receive_msg",encoding="utf-8")
+file_handler = logging.FileHandler("data/receive_msg.log",encoding="utf-8")
 file_handler.setLevel(logging.DEBUG)
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.DEBUG)
@@ -31,6 +29,9 @@ file_handler.setFormatter(formatter)
 
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
+
+resp_pro = Proto()
+receive_queue = Queue() # 接收到的消息队列
 
 def get_usr_list():
     url = "https://api.live.bilibili.com/xlive/general-interface/v1/rank/queryContributionRank"
@@ -52,6 +53,17 @@ def get_usr_list():
         usr_list = []
     return usr_list
 
+def change_usr_sun(show_text,blive_usr,usr : str,processed_value: int):
+    # blive_usr = SqlControl()
+
+    remain_sun = blive_usr.search_usr(usr)
+    remain_sun += processed_value
+    blive_usr.update_data(usr,remain_sun)
+    road = show_text.usr_dict.get(usr)
+    if road != None:
+        show_text.change_text(show_text.road_dict[road]["label"],f"{usr}\n阳光:{remain_sun}")
+
+
 def check_usrs(show_text):
     while True:
         try:
@@ -71,7 +83,7 @@ def check_usrs(show_text):
 
 def check_win(pvzcheat,show_text):
     blive_usr = SqlControl()
-    global guess_win_usr
+    # global guess_win_usr
     count_num = 0
     while True:
         time.sleep(1)
@@ -90,14 +102,16 @@ def check_win(pvzcheat,show_text):
                     # print(usr,road,win_road_num)
                     if int(road) == win_road_num:
                         show_text.maintext_queue.put(f"{usr}\n获得最终胜利！获取1000阳光")
-                        remain_sun = blive_usr.search_usr(usr)
-                        blive_usr.update_data(usr,remain_sun+1000)
+                        # remain_sun = blive_usr.search_usr(usr)
+                        # blive_usr.update_data(usr,remain_sun+1000)
+                        change_usr_sun(show_text,blive_usr,usr,1000)
 
                 time.sleep(2.5)
                 # pvzcheat.select_zp_to_board()
                 receive_queue.put({
                     'cmd':'RESET'
                 })
+            
 
         except Exception as e:
             logger.error(traceback.format_exc())
@@ -132,7 +146,7 @@ def start(pvzcheat):
     blive_usr = SqlControl()
     like_count = 0
     # 保证入座用户在直播间
-    threading.Thread(target=check_usrs, args = (show_text，),daemon=True).start()
+    threading.Thread(target=check_usrs, args = (show_text,),daemon=True).start()
     # 每秒检测是否有玩家获胜
     threading.Thread(target=check_win, args = (pvzcheat,show_text),daemon=True).start()
     while True:
@@ -177,10 +191,11 @@ def start(pvzcheat):
                         elif (position_num//10)+(0!=(position_num%10)) != int(show_text.usr_dict[usr]):
                             show_text.maintext_queue.put(f"{usr}\n请操作自己那一路")
                         elif instruct[0]=="t":
-                            # blive_usr.update_data(usr,remain_sun-100)
+
                             pvzcheat.shovel_plants(instruct[1:3])
                         elif instruct[0]=="p":
-                            blive_usr.update_data(usr,remain_sun-100)
+
+                            change_usr_sun(show_text,blive_usr,usr,-100)
                             pvzcheat.plant_plants(256,instruct[1:3])
                     else:
                         if (position_num//10)+(0!=(position_num%10)) != int(show_text.usr_dict[usr])-5:

@@ -140,7 +140,11 @@ class Show_Text:
         update()
         root_1.mainloop()
 
-
+    '''
+    usr_dict = {
+        "usr":"1"
+    }
+    '''
     def sit_down(self,usr,usr_input):
         if usr_input[0] == "入" and len(usr_input) > 2:
             usr_input = usr_input.replace("一","1")
@@ -165,7 +169,7 @@ class Show_Text:
                     remain_sun = self.blive_usr.search_usr(usr)
                     self.change_text(self.road_dict[row]["label"],f"{usr}\n阳光:{remain_sun}")
                     self.road_dict[row]["text"] = usr
-                    self.maintext_queue.put(f"{usr}\n入座成功，输入“离座”离开\n目标:存活下来!")
+                    self.maintext_queue.put(f"{usr}\n入座成功，输入“离座”离开")
                     self.usr_dict[usr] = row
                 else:
                     self.maintext_queue.put(f"{row}路已经有人入座了")
