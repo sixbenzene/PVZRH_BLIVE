@@ -179,6 +179,8 @@ class Show_Text:
             for key,value in self.road_dict.items():
                 if value["text"] == usr:
                     self.change_text(value["label"],f"{key}路")
+                    # self.root.after(0, self.change_text, value["label"], f"{key}路")
+
                     value["text"] = f"{key}路"
                     self.maintext_queue.put(f"{usr}\n离开座位")
                     del self.usr_dict[usr]

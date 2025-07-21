@@ -47,11 +47,17 @@ def get_usr_list():
         "type":"online_rank",
         "page":1,
     }
+    usr_list = []
     try:
         response = requests.get(url,headers = headers,params = params,timeout = 5)
-        usr_list = [usr["name"] for usr in json.loads(response.text)['data']["item"]]
+        data = json.loads(response.text)['data']["item"]
+        if data == None:
+            usr_list = []
+        else:
+            usr_list = [usr["name"] for usr in data]
     except:
-        usr_list = []
+        return -1
+
     return usr_list
 
 def change_usr_sun(show_text,blive_usr,usr : str,processed_value: int):
@@ -71,12 +77,20 @@ def check_usrs(show_text):
             sit_down_usr = show_text.usr_dict.copy()
             usr_list = get_usr_list()
             time.sleep(10)
-            if len(usr_list) == 0:
+            if usr_list == -1:
                 continue
             # print(usr_list)
             for usr,status in sit_down_usr.items():
                 if usr not in usr_list:
                     show_text.stand_up(usr,"离")
+                    receive_queue.put({
+                        "cmd":"LIVE_OPEN_PLATFORM_DM",
+                        "data":{
+                            "msg":"离",
+                            "uname":usr
+                        }
+                    })
+                    break
 
         except Exception as e:
             logger.error(traceback.format_exc())
@@ -105,7 +119,12 @@ def check_win(pvzcheat,show_text):
                         show_text.maintext_queue.put(f"{usr}\n获得最终胜利！获取1000阳光")
                         # remain_sun = blive_usr.search_usr(usr)
                         # blive_usr.update_data(usr,remain_sun+1000)
-                        change_usr_sun(show_text,blive_usr,usr,1000)
+                        receive_queue.put({
+                            'cmd':'add_sun',
+                            'usr':usr,
+                            "count":1000
+                        })
+                        # change_usr_sun(show_text,blive_usr,usr,1000)
 
                 time.sleep(2.5)
                 # pvzcheat.select_zp_to_board()
@@ -168,7 +187,8 @@ def start(pvzcheat):
                     show_text.text2voice(f"欢迎{item['data']['uname']}进入直播间")
                 if item['cmd'] == 'RESET':
                     pvzcheat.select_zp_to_board()
-                
+                if item['cmd'] == 'add_sun':
+                    change_usr_sun(show_text,blive_usr,item['usr'],item['count'])
                 continue
             danmu = item['data']['msg']
             usr =  item['data']['uname']
