@@ -14,7 +14,7 @@ from scripts.cheat_game_250 import PvzCheat
 from scripts.Show_Text import Show_Text
 from scripts.SqlControl import SqlControl
 from scripts.send_msg import send_danmu
-
+from scripts.check_screen import CheckScreen
 
 logger = logging.getLogger("receive_msg")
 logger.setLevel(logging.DEBUG)
@@ -60,34 +60,46 @@ def get_usr_list():
 
     return usr_list
 
-def change_usr_sun(show_text,blive_usr,usr : str,processed_value: int):
+def change_usr_sun(show_text,blive_usr,openid:str,usr : str,processed_value: int):
     # blive_usr = SqlControl()
 
-    remain_sun = blive_usr.search_usr(usr)
+    remain_sun = blive_usr.search_usr(openid)
     remain_sun += processed_value
-    blive_usr.update_data(usr,remain_sun)
+    blive_usr.update_data(openid,remain_sun)
     road = show_text.usr_dict.get(usr)
     if road != None:
         show_text.change_text(show_text.road_dict[road]["label"],f"{usr}\n阳光:{remain_sun}")
 
 
 def check_usrs(show_text):
+    CS = CheckScreen()
+    img1 = CS.grab_img()
     while True:
         try:
-            sit_down_usr = show_text.usr_dict.copy()
             usr_list = get_usr_list()
             time.sleep(10)
+            sit_down_usr = show_text.usr_dict.copy()
+            img2 = CS.grab_img()
+            stuck = CS.mse(img1,img2)
+            img1 = img2
+            # logger.info(stuck)
+            if stuck:
+                logger.error(f"卡住，执行stuck")
+                receive_queue.put({
+                    "cmd":"stuck"
+                })
             if usr_list == -1:
                 continue
             # print(usr_list)
             for usr,status in sit_down_usr.items():
                 if usr not in usr_list:
-                    show_text.stand_up(usr,"离")
+                    # show_text.stand_up(usr,"离")
                     receive_queue.put({
                         "cmd":"LIVE_OPEN_PLATFORM_DM",
                         "data":{
                             "msg":"离",
-                            "uname":usr
+                            "uname":usr,
+                            "open_id":show_text.usr_openid[usr]
                         }
                     })
                     break
@@ -97,31 +109,44 @@ def check_usrs(show_text):
             logger.error(f"check_usrs_error:{e}")
 
 def check_win(pvzcheat,show_text):
-    blive_usr = SqlControl()
-    # global guess_win_usr
     count_num = 0
+    zombie_id = 218
     while True:
         time.sleep(1)
         count_num += 1
         if count_num == 180:
-            pvzcheat.change_speed(3)
-        elif count_num == 120:
-            pvzcheat.change_speed(2)
+            show_text.maintext_queue.put("BOSS来临！")
+            for i in range(5):
+                pvzcheat.plant_zombie(zombie_id,str((i+1)*10))
+            zombie_id+=1
+            # pvzcheat.change_speed(3)
+
+        elif count_num == 240:
+            show_text.maintext_queue.put("BOSS来临！")
+            for i in range(5):
+                pvzcheat.plant_zombie(zombie_id,str((i+1)*10))
+            zombie_id+=1
+            # pvzcheat.change_speed(2)
+        elif count_num >240 and count_num%20 == 0:
+            show_text.maintext_queue.put("BOSS来临！")
+            for i in range(5):
+                pvzcheat.plant_zombie(zombie_id,str((i+1)*10))
+            zombie_id+=1
         try:
             win_road_num = pvzcheat.get_win_road()
             if win_road_num != -1:
-                pvzcheat.change_speed(1)
+                # pvzcheat.change_speed(1)
                 count_num = 0
+                zombie_id = 218
                 send_danmu(f"{win_road_num}路获得最终胜利！")
                 for usr,road in show_text.usr_dict.items():
                     # print(usr,road,win_road_num)
                     if int(road) == win_road_num:
                         show_text.maintext_queue.put(f"{usr}\n获得最终胜利！获取1000阳光")
-                        # remain_sun = blive_usr.search_usr(usr)
-                        # blive_usr.update_data(usr,remain_sun+1000)
                         receive_queue.put({
                             'cmd':'add_sun',
                             'usr':usr,
+                            'open_id':show_text.usr_openid[usr],
                             "count":1000
                         })
                         # change_usr_sun(show_text,blive_usr,usr,1000)
@@ -159,7 +184,10 @@ async def receive(websocket):
             receive_queue.put(item)
             # if item['cmd'] == "LIVE_OPEN_PLATFORM_DM":
             #     danmu = item['data']['msg']
-            #     logger.info(f"{item['data']['uname']}：{danmu}")
+            #     logger.info(item)
+                # if danmu == "error":
+                #     raise Exception("test error")
+                # logger.info(f"{item['data']['uname']}：{danmu}")
 
 def start(pvzcheat):
     show_text = Show_Text()
@@ -177,29 +205,34 @@ def start(pvzcheat):
                     logger.info(f"{item['data']['uname']} 点赞了,点赞次数：{item['data']['like_count']}")
                     like_count += item['data']['like_count']
                     usr = item['data']['uname']
+                    change_usr_sun(show_text,blive_usr,item['data']['open_id'],usr,like_count*10)
                     while like_count >=5:
                         like_count -= 5
                         for i in range(5):
                             pvzcheat.plant_zombie(0,str((i+1)*10))
-                    show_text.maintext_queue.put(f"{usr}触发普通僵尸")
+                        # show_text.maintext_queue.put(f"{usr}触发普通僵尸")
                 if item['cmd'] == 'LIVE_OPEN_PLATFORM_LIVE_ROOM_ENTER':
                     logger.info(f"{item['data']['uname']} 进入直播间")
                     show_text.text2voice(f"欢迎{item['data']['uname']}进入直播间")
                 if item['cmd'] == 'RESET':
                     pvzcheat.select_zp_to_board()
                 if item['cmd'] == 'add_sun':
-                    change_usr_sun(show_text,blive_usr,item['usr'],item['count'])
+                    change_usr_sun(show_text,blive_usr,item['open_id'],item['usr'],item['count'])
+                if item['cmd'] == 'stuck':
+                    pvzcheat.stuck()
                 continue
             danmu = item['data']['msg']
             usr =  item['data']['uname']
             logger.info(f"{usr}：{danmu}")
-            show_text.sit_down(usr,danmu)
+            # logger.info(item)
+            openid = item['data']['open_id']
+            show_text.sit_down(usr,danmu,openid)
             show_text.stand_up(usr,danmu)
             danmu = danmu.lower()
             for instruct in danmu.split(","):
-                instruct = instruct.replace(" ","")
-                remain_sun = blive_usr.search_usr(usr)
-                if len(instruct)>0 and instruct[1:3].isdigit():
+                # instruct = instruct.replace(" ","")
+                remain_sun = blive_usr.search_usr(openid)
+                if len(instruct)>0 and instruct[1:3].replace(" ","").isdigit():
                     position_num = int(instruct[1:3])
                     usr_seat = int(show_text.usr_dict.get(usr, -1))
                     if usr_seat == -1:
@@ -210,14 +243,19 @@ def start(pvzcheat):
                             show_text.maintext_queue.put(f"{usr}\n阳光不足")
                             break
                         elif (position_num//10)+(0!=(position_num%10)) != int(show_text.usr_dict[usr]):
+                            # logger.info(f"{(position_num//10)+(0!=(position_num%10))} {show_text.usr_dict[usr]} {instruct}")
                             show_text.maintext_queue.put(f"{usr}\n请操作自己那一路")
                         elif instruct[0]=="t":
 
                             pvzcheat.shovel_plants(instruct[1:3])
                         elif instruct[0]=="p":
 
-                            change_usr_sun(show_text,blive_usr,usr,-100)
+                            change_usr_sun(show_text,blive_usr,openid,usr,-100)
                             pvzcheat.plant_plants(256,instruct[1:3])
+                        elif instruct[0] == "m":
+                            figures = instruct[1:].split(" ")
+                            if len(figures) >=2:
+                                pvzcheat.move_plants(figures[0],figures[1])
                     else:
                         if (position_num//10)+(0!=(position_num%10)) != int(show_text.usr_dict[usr])-5:
                             show_text.maintext_queue.put(f"{usr}\n请操作自己那一路")
@@ -225,7 +263,7 @@ def start(pvzcheat):
                             # blive_usr.update_data(usr,remain_sun-100)
                             pvzcheat.plant_zombie(21,instruct[1:3])
             if danmu == "签到":
-                status = blive_usr.sign_in(usr)
+                status = blive_usr.sign_in(openid)
                 if status == True:
                     show_text.maintext_queue.put(f"{usr}\n成功签到！获取1000阳光")
                     send_danmu(f"{usr}\n成功签到！获取1000阳光")
@@ -233,14 +271,37 @@ def start(pvzcheat):
                     show_text.maintext_queue.put(f"{usr}\n你今天已经签到过了嗷！")
                     send_danmu(f"{usr}\n你今天已经签到过了嗷！")
             elif danmu == "查询":
-                remain_sun = blive_usr.search_usr(usr)
+                remain_sun = blive_usr.search_usr(openid)
                 send_danmu(f"@{usr} 剩余阳光:{remain_sun}")
+            
+            elif danmu == "stuck":
+                pvzcheat.stuck()
+
+            elif danmu == "interit":
+                old_sun = blive_usr.search_old(usr)
+                blive_usr.search_usr(openid)
+                if old_sun == False:
+                    send_danmu(f"{usr}数据未找到")
+                else:
+                    blive_usr.update_data(openid,old_sun)
+                    change_usr_sun(show_text,blive_usr,openid,usr,0)
+                    send_danmu(f"{usr}数据加载成功")
+
 
         except Exception as e:
             logger.error(f"start_error:{e}")
             logger.error(traceback.format_exc())
             continue
+from typing import List
 
+def shutdown(tasks: List[asyncio.Task]):
+    """清理所有任务和连接"""
+        # 1. 取消所有未完成的任务
+    for task in tasks:
+        if not task.done():
+            task.cancel()
+
+    # websocket.close()
 def main():
     cli = BiliClient(
         idCode=config.idCode,  
@@ -253,6 +314,7 @@ def main():
     # websocket = await cli.connect()
     while True:
         try:
+           
             tasks = [
                 # 读取信息
                 asyncio.ensure_future(receive(websocket)),
@@ -265,9 +327,11 @@ def main():
         except KeyboardInterrupt:
             break
         except Exception as e:
+            shutdown(tasks)
             logger.error(f"main_error:{e}")
             logger.error(traceback.format_exc())
             logger.error("重连。。。")
+            time.sleep(1)
             continue
 
 if __name__ == "__main__":
@@ -276,3 +340,4 @@ if __name__ == "__main__":
         threading.Thread(target=start,args = (pvzcheat,),daemon = True).start()
         # threading.Thread(target=LLM_response,daemon = True).start()
         main()
+    # main()
