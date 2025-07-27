@@ -4,3 +4,10 @@ pymem
 keyboard
 playsound==1.2.2
 edge_tts
+obs-websocket-py
+opencv-python
+numpy
+pygetwindow
+Pillow
+pyautogui
+pywin32
