@@ -26,7 +26,7 @@ def send_danmu(msg: str):
         # 'referer': 'https://live.bilibili.com/4638098?broadcast_type=0&is_room_feed=1&spm_id_from=333.999.live_users_card.0.click&live_from=86001',
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
     } 
-
+    time.sleep(1)
     for i in range(0,len(msg),20):
         form_data['msg'] = msg[i:i+20]
         response = requests.post(url=url, data=form_data, headers=headers)

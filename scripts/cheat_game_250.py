@@ -63,7 +63,6 @@ class PvzCheat:
         with open("data/select_to_board.json","r",encoding="utf-8") as file:
             self.select_to_board = json.load(file)
 
-        self.blive_usr = SqlControl()
         self.allocate_members = []
         self.data_address = None
         self.inject()
@@ -160,7 +159,7 @@ class PvzCheat:
     def mouse_click(self,x,y):
         # time.sleep(0.05)
         self.change_position(x,y)
-        time.sleep(0.002)
+        time.sleep(0.003)
         self.pm.write_int(self.click_address,1)
         self.pm.write_int(self.click_address_1,1)
         time.sleep(0.02)
@@ -239,7 +238,8 @@ class PvzCheat:
         self.pm.write_longlong(self.position_address, 0)
         time.sleep(0.1)
 
-
+    def put_esc(self):
+        self.pm.write_int(self.click_esc_address,1)
 
     def change_speed(self,speed):
         speed = float(speed)
@@ -256,28 +256,40 @@ class PvzCheat:
         # keys = list(self.select_to_board.keys())
         self.mouse_click(self.tools["set_zombie"][0],self.tools["set_zombie"][1])
         x,y = self.select_to_board["1"][0],self.select_to_board["1"][1]
+        time.sleep(0.01)
         self.mouse_click(x,y)
+        time.sleep(0.01)
         self.mouse_click(self.tools["set_zombie"][0],self.tools["set_zombie"][1])
         time.sleep(0.01)
         self.mouse_click(self.tools["set_plant"][0],self.tools["set_plant"][1])
+        time.sleep(0.01)
         self.mouse_click(x,y)
+        time.sleep(0.01)
         self.mouse_click(self.tools["set_plant"][0],self.tools["set_plant"][1])
         self.pm.write_longlong(self.position_address, 0)
 
     def pressure_test(self,n):
         for i in range(n):
-            self.select_zp_to_board()
-            time.sleep(1)
             self.mouse_click(self.tools["set_zombie"][0],self.tools["set_zombie"][1])
-            x,y = self.zhi_wu["a"][0],self.zhi_wu["a"][1]
-            self.mouse_click(x,y)
-            time.sleep(0.05)
-            self.mouse_click(x,y)
-            time.sleep(0.05)
             self.mouse_click(self.tools["set_zombie"][0],self.tools["set_zombie"][1])
+            self.mouse_click(self.tools["set_plant"][0],self.tools["set_plant"][1])
+            self.mouse_click(self.tools["set_plant"][0],self.tools["set_plant"][1])
+            # self.pm.write_longlong(self.position_address, 0)
 
-            self.pm.write_longlong(self.position_address, 0)
+    def stuck(self):
+        self.mouse_click(self.tools["set_zombie"][0],self.tools["set_zombie"][1])
+        self.mouse_click(self.tools["set_plant"][0],self.tools["set_plant"][1])
+
+    def move_plants(self,start_pos,end_pos):
+        if start_pos in self.game_map and end_pos in self.game_map:
+            self.mouse_click(self.tools["glove2"][0],self.tools["glove2"][1])
+            x,y = self.game_map[start_pos][0],self.game_map[start_pos][1]
+            self.mouse_click(x,y)
+            x,y = self.game_map[end_pos][0],self.game_map[end_pos][1]
+            self.mouse_click(x,y)
+            self.pm.write_int(self.right_click_address,1)
             time.sleep(0.01)
+            self.pm.write_longlong(self.position_address, 0)
 
 
     def inject(self):
@@ -590,6 +602,7 @@ if __name__ == "__main__":
             elif a == "9":
                 b = input("测试次数：")
                 pvzcheat.pressure_test(int(b))
-            
+            elif a == "10":
+                pvzcheat.put_esc()
 
     

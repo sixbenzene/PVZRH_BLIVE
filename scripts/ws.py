@@ -108,6 +108,7 @@ class BiliClient:
             headerMap = self.sign(params)
             r = requests.post(url=postUrl, headers=headerMap,
                             data=params) # verify=False
+            # raise Exception("error test")
             # data = json.loads(r.content)
             # print("[BiliClient] send appheartBeat success")
 
