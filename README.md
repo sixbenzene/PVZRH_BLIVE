@@ -34,7 +34,7 @@ pip install -r requirements.txt
 ```
 python receive_msg.py
 ```
-- 直播使用obs或直播姬
+- 直播使用obs并开启websocket
 
 ### 获取csrf_token,cookie
 - 打开自己直播间，按下f12，查看network  
