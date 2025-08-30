@@ -21,6 +21,7 @@ from scripts.cheat_game import PvzCheat
 from scripts.SqlControl import SqlControl
 from scripts.send_msg import send_danmu
 from scripts.check_screen import CheckScreen
+from scripts.LLMapi import QwenLLM,ConvertHistory
 
 
 logger = logging.getLogger("receive_msg")
@@ -58,9 +59,13 @@ class ScreenRequest:
     async def client(self):
         async with websockets.connect(self.uri) as websocket:
             while True:
-                msg = await self.req_msg.get()
-                # 发送一条消息
-                await websocket.send(msg)
+                try:
+                    msg = await self.req_msg.get()
+                    # 发送一条消息
+                    await websocket.send(msg)
+                except Exception as e:
+                    await asyncio.sleep(1)
+                    print(f"Screen client erro {e}")
 
     def send_msg(self,msg):
         asyncio.run_coroutine_threadsafe(self.req_msg.put(msg), self.loop)
@@ -110,13 +115,14 @@ class ScreenRequest:
         self.roll_text(f"{uname},成功消耗500阳光入座。输入离坐离开")
         self.seat_info[seat] = {
             "uname":uname,
-            "open_id":open_id
+            "open_id":open_id,
+            "win_pool":0
         }
         self.user_info[uname] = {
             "seat":seat,
-            "open_id":open_id
+            "open_id":open_id,
         }
-        text = f"{uname}\n阳光：{remain_sun}"
+        text = f"{uname}\n阳光：{remain_sun}\n连胜奖励池:0"
         data = {
             "info":"sit_down",
             "uname":uname,
@@ -158,7 +164,8 @@ class ScreenRequest:
         if seat_info == None:
             return
         seat = seat_info.get("seat")
-        text = f"{uname}\n阳光：{remain_sun}"
+        win_pool = self.seat_info[seat]["win_pool"]
+        text = f"{uname}\n阳光：{remain_sun}\n连胜奖励池:{win_pool}"
         data = {
             "info":"sit_down",
             "uname":uname,
@@ -180,14 +187,21 @@ class ScreenRequest:
     
     def user_guess(self,uname,open_id,seat):
         end_time = time.time()
-        self.roll_text(f"{uname}猜{seat}会赢，扣500阳光，买定离手，不允许更改。")
         self.change_sun(uname,open_id,-500)
         if end_time-self.start_time<self.time_length:
+            self.roll_text(f"{uname}猜{seat}会赢，扣500阳光，买定离手，不允许更改。")
             self.guess_users_list.append({
                 "uname":uname,
                 "open_id":open_id,
                 "seat":seat
             })
+    
+    def speech(self,text):
+        data = {
+            "info":"speech",
+            "text":text
+        }
+        self.send_msg(json.dumps(data,ensure_ascii=False))
         
 
 def get_usr_list():
@@ -281,6 +295,7 @@ def check_win(pvzcheat: PvzCheat,screen : ScreenRequest):
         try:
             win_road_num = pvzcheat.get_win_road()
             if win_road_num != -1:
+                # pvzcheat.save_lineup()
                 # pvzcheat.change_speed(1)
                 count_num = 0
                 zombie_id = 218
@@ -289,11 +304,15 @@ def check_win(pvzcheat: PvzCheat,screen : ScreenRequest):
                 for key,value in screen.seat_info.items():
                     uname = value["uname"]
                     open_id = value["open_id"]
+                    win_pool = value["win_pool"]
                     if int(key) == win_road_num:
-                        screen.roll_text(f"{uname}获得最终胜利！获取1500阳光")
-                        screen.change_sun(uname,open_id,1500)
+                        win_sun = 1500+win_pool
+                        screen.roll_text(f"{uname}获得最终胜利！获取{win_sun}阳光")
+                        value["win_pool"] += 100
+                        screen.change_sun(uname,open_id,win_sun)
                     elif int(key)<6:
                         screen.roll_text(f"{uname}失败，扣除300阳光")
+                        value["win_pool"] = 0
                         screen.change_sun(uname,open_id,-300)
                 for users in screen.guess_users_list:
                     if int(users["seat"]) == win_road_num:
@@ -307,6 +326,7 @@ def check_win(pvzcheat: PvzCheat,screen : ScreenRequest):
                 receive_queue.put({
                     'cmd':'RESET'
                 })
+                
                 receive_queue.put({
                     'cmd':'shovel',
                     'road':win_road_num
@@ -333,18 +353,26 @@ async def receive(websocket):
     '''
 
     while True:
-        recvBuf = await websocket.recv()
-        item = resp_pro.unpack(recvBuf)
-        if item==None:
+        try:
+            recvBuf = await websocket.recv()
+            item = resp_pro.unpack(recvBuf)
+            if item==None:
+                continue
+            if "cmd" in item:
+                receive_queue.put(item)
+                # if item['cmd'] == "LIVE_OPEN_PLATFORM_DM":
+                #     danmu = item['data']['msg']
+                #     # logger.info(item)
+                #     if danmu == "error":
+                #         raise Exception("test error")
+                #     logger.info(f"{item['data']['uname']}：{danmu}")
+        except Exception as e:
+            logger.error(traceback.format_exc())
+            logger.error(f"receive:{e}")
+            await asyncio.sleep(1)
             continue
-        if "cmd" in item:
-            receive_queue.put(item)
-            # if item['cmd'] == "LIVE_OPEN_PLATFORM_DM":
-            #     danmu = item['data']['msg']
-            #     # logger.info(item)
-            #     if danmu == "error":
-            #         raise Exception("test error")
-            #     logger.info(f"{item['data']['uname']}：{danmu}")
+            
+
 
 def start(pvzcheat: PvzCheat, screen: ScreenRequest):
 
@@ -359,7 +387,11 @@ def start(pvzcheat: PvzCheat, screen: ScreenRequest):
     control_instructions = ["p","t","z","m","c"]
     with open("data/zombie_id.json",'r',encoding='utf-8') as f:
         zombie_ids_list = json.load(f)
-    plants_ids_list = [901,939,903,921,904,933,924,910,927,902,913,925,909,920,911,922,914,915,934,940,941,943]
+    llm = QwenLLM(enable_thinking=False)
+    ch = ConvertHistory()
+    system_prompt = config.system_prompt
+    ch.add_history(system_prompt,"system")
+
     while True:
         try:
             item = receive_queue.get()
@@ -372,9 +404,9 @@ def start(pvzcheat: PvzCheat, screen: ScreenRequest):
                     # print(usr,open_id)
 
                     screen.change_sun(usr,open_id,item['data']['like_count']*10)
-                    while like_count >=5:
+                    while like_count >=50:
                         screen.roll_text(f"{usr}触发随机僵尸")
-                        like_count -= 5
+                        like_count -= 50
                         for i in range(5):
                             rannum = random.randint(0,72)
                             # pvzcheat.plant_zombie(0,str((i+1)*10))
@@ -385,6 +417,9 @@ def start(pvzcheat: PvzCheat, screen: ScreenRequest):
                     screen.roll_text(f"欢迎{item['data']['uname']}进入直播间")
                 if item['cmd'] == 'RESET':
                     pvzcheat.select_zp_to_board()
+                    pvzcheat.show_blood()
+                    # pvzcheat.load_lineup()
+
 
                 if item['cmd'] == 'stuck':
                     pvzcheat.stuck()
@@ -392,10 +427,8 @@ def start(pvzcheat: PvzCheat, screen: ScreenRequest):
                     win_road = item['road']
                     for i in range(5):
                         pvzcheat.shovel_plants(str((win_road-1)*10+i+1))
-                    for i in range(5):
-                        rannum = random.randint(0,len(plants_ids_list)-1)
                         # pvzcheat.plant_plants(927,str((win_road-1)*10+i+1))
-                        pvzcheat.plant_plants(plants_ids_list[rannum],str((win_road-1)*10+i+1))
+                    pvzcheat.click_random_plant()
                 continue
             danmu = item['data']['msg']
             usr =  item['data']['uname']
@@ -419,17 +452,26 @@ def start(pvzcheat: PvzCheat, screen: ScreenRequest):
                     if instruct[0] not in control_instructions:
                         break
                     position_num = int(instruct[1:3])
-                    if instruct[0] == 'z':
-                            # blive_usr.update_data(usr,remain_sun-100)
-                            pvzcheat.plant_zombie(21,instruct[1:3])
-                            continue
+                    if usr == config.author:
+                        if instruct[0]=="t":
+                            pvzcheat.shovel_plants(instruct[1:3])
+                        elif instruct[0]=="p":
+                            pvzcheat.plant_plants(256,instruct[1:3])
+                        elif instruct[0] == "m":
+                            figures = instruct[1:].split(" ")
+                            if len(figures) >=2:
+                                pvzcheat.move_plants(figures[0],figures[1])
+                        elif instruct[0] == "c":
+                            pvzcheat.click_positoin(instruct[1:3])
+                        continue
+
                     user_info = screen.user_info.get(usr)
                     if user_info == None:
                         screen.roll_text(f"{usr}  未入座，不允许操作")
                         break
                     else:
                         usr_seat = int(user_info['seat'])
-                    if usr_seat <=5:
+                    if usr_seat <=5 :
                         if remain_sun<100:
                             screen.roll_text(f"{usr}  阳光不足")
                             break
@@ -472,6 +514,17 @@ def start(pvzcheat: PvzCheat, screen: ScreenRequest):
                     if remain_sun < 500:
                         continue
                     screen.user_guess(usr,open_id,digist_l[0])
+            elif danmu.startswith("清哥") and config.use_llm:
+                prompt = f"观众名称为“{usr}”的用户说：{danmu}"
+                history = ch.add_history(prompt)
+                llm_res = llm.chat(history)
+                if len(ch.history) > 30:
+                    del ch.history[1:3]
+                print(f"大模型回复：{llm_res}")
+                sentences = re.findall(r'[^。！？!?；;]+[。！？!?；;]?', llm_res)
+                screen.speech(json.dumps(sentences,ensure_ascii=False))
+            elif danmu=="cache":
+                pvzcheat.clear_cache()
             elif danmu == "stuck":
                 pvzcheat.stuck()
 
@@ -504,29 +557,29 @@ def main(screen: ScreenRequest):
     loop = asyncio.get_event_loop()
     websocket = loop.run_until_complete(cli.connect())
     # websocket = await cli.connect()
-    while True:
-        try:
+    # while True:
+    #     try:
            
-            tasks = [
-                # 读取信息
-                asyncio.ensure_future(receive(websocket)),
-                # 发送心跳
-                asyncio.ensure_future(cli.heartBeat(websocket)),
-                # 发送游戏心跳
-                asyncio.ensure_future(cli.appheartBeat()),
-                asyncio.ensure_future(screen.client())
-            ]
-            loop.run_until_complete(asyncio.gather(*tasks))
-        except KeyboardInterrupt:
-            logger.info("^C 退出")
-            break
-        except Exception as e:
-            shutdown(tasks)
-            logger.error(f"main_error:{e}")
-            logger.error(traceback.format_exc())
-            logger.error("重连。。。")
-            time.sleep(1)
-            continue
+    tasks = [
+        # 读取信息
+        asyncio.ensure_future(receive(websocket)),
+        # 发送心跳
+        asyncio.ensure_future(cli.heartBeat(websocket)),
+        # 发送游戏心跳
+        asyncio.ensure_future(cli.appheartBeat()),
+        asyncio.ensure_future(screen.client())
+    ]
+    loop.run_until_complete(asyncio.gather(*tasks))
+        # except KeyboardInterrupt:
+        #     logger.info("^C 退出")
+        #     break
+        # except Exception as e:
+        #     # shutdown(tasks)
+        #     logger.error(f"main_error:{e}")
+        #     logger.error(traceback.format_exc())
+        #     logger.error("重连。。。")
+        #     time.sleep(1)
+        #     continue
 
 if __name__ == "__main__":
     pvzcheat = PvzCheat()
