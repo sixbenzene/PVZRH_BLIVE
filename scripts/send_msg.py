@@ -27,8 +27,9 @@ def send_danmu(msg: str):
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
     } 
     time.sleep(1)
-    for i in range(0,len(msg),20):
-        form_data['msg'] = msg[i:i+20]
+    max_length = 40
+    for i in range(0,len(msg),max_length):
+        form_data['msg'] = msg[i:i+max_length]
         response = requests.post(url=url, data=form_data, headers=headers)
         time.sleep(1)
     print(response.status_code)

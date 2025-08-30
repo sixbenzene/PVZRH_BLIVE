@@ -9,6 +9,15 @@ class SqlControl:
         self.cursor = self.conn.cursor()
         self.create_table()
 
+    def temp_control(self):
+        # control = '''
+        #     ALTER TABLE blive_usr_uid ADD COLUMN uname TEXT;
+        #     '''
+        control = '''
+            ALTER TABLE blive_usr_uid ADD COLUMN fans_club TEXT;
+            '''
+        self.cursor.execute(control)
+        self.conn.commit()
 
     def create_table(self):
         create_table_sql = '''
@@ -16,7 +25,8 @@ class SqlControl:
                 id INTEGER PRIMARY KEY,
                 openid TEXT NOT NULL,
                 sun INTEGER,
-                last_sign_in_date TEXT
+                last_sign_in_date TEXT,
+                uname TEXT
             )
             ''' 
         # 执行SQL语句
@@ -28,14 +38,29 @@ class SqlControl:
         self.cursor.execute("SELECT * FROM blive_usr_uid")
         rows = self.cursor.fetchall()
         # print(rows)
-        # return rows
+        return rows
         for row in rows:
             print(row)
             # break
-    def search_usr(self,openid:str): # 通过openid查找用户
+
+    def search_ranking(self):
+        self.cursor.execute("""
+            SELECT * 
+            FROM blive_usr_uid 
+            WHERE uname IS NOT NULL 
+            ORDER BY sun DESC
+        """)
+
+        # 获取结果
+        results = self.cursor.fetchall()
+        return results
+
+    def search_usr(self,openid:str,uname:str): # 通过openid查找用户
         self.cursor.execute("SELECT sun FROM blive_usr_uid WHERE openid = ?", (openid,))
         result = self.cursor.fetchone()
         if result:
+            self.cursor.execute("UPDATE blive_usr_uid SET uname = ? WHERE openid = ?", (uname, openid))
+            self.conn.commit()
             return result[0]
         else:
             self.insert_data(openid,1000)
@@ -61,7 +86,18 @@ class SqlControl:
         self.cursor.execute("DELETE FROM blive_usr_uid WHERE openid = ?", (openid,))
         self.conn.commit()
 
-    def sign_in(self,openid:str): # 签到
+    def clean(self): # 清理重复用户
+        datas = self.show_tables()
+        data_dic = {}
+        for data in datas:
+            keys = data_dic.keys()
+            if data[1] in keys:
+                self.delet_data(data[1])
+                print(f"删除：{data[1]}")
+            data_dic[data[1]] = 0
+
+
+    def sign_in(self,openid:str,uname:str): # 签到
         # 获取当前日期
         today = datetime.now().strftime("%Y-%m-%d")
         # print(today)
@@ -75,7 +111,7 @@ class SqlControl:
                 return False
             else:
                 self.cursor.execute("UPDATE blive_usr_uid SET last_sign_in_date = ? WHERE openid = ?", (today, openid))
-                remain_sun = self.search_usr(openid)
+                remain_sun = self.search_usr(openid,uname)
                 self.update_data(openid,remain_sun+1000)
                 self.conn.commit()
                 return True
@@ -87,10 +123,18 @@ class SqlControl:
 if __name__ == "__main__":
     usr_base = SqlControl()
     # usr_base.create_table()
-    # usr_base.delet_data("你好")
+    # usr_base.delet_data("清哥想要成为技术大佬")
     # usr_base.sign_in("你好")
-    print(usr_base.search_usr("清哥想要成为技术大佬"))
+    # print(usr_base.search_usr("清哥想要成为技术大佬","清哥想要成为技术大佬"))
+    # usr_base.temp_control()
     # print(usr_base.search_usr("锡不嘻嘻"))
-    usr_base.show_tables()
+    usr_base.update_data("a9d75fdf0baa413a88db2a3abd4a5c7c",100000)
+    # rows= usr_base.show_tables()
+    # for row in rows:
+    #     print(row)
+
+    # usr_base.clean()
+    # usr_base.search_ranking()
+
 
     

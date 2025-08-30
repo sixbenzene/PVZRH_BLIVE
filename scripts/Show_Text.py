@@ -120,7 +120,7 @@ class Show_Text:
         self.time_step = 0
         label = tk.Label(root_1,text=" ",font=("Microsoft YaHei", 50,"bold"),fg='#5be1f9',bg="black")
         label.place(relx=0.5,rely=0.5,anchor='center')
-        self.play_prompt = "1.输入“签到”领阳光  2.输入“查询”查询阳光  3.输入“入座x路”入座  4.输入“离座”离座  5.输入p+数字放置随机礼盒   6.t+数字铲除植物  7.五个点赞一列普通僵尸,一个点赞加十阳光，B站点赞上限1000  8.在右置位入座的输入z+数字放置僵尸 9.点个关注呗，目标1万粉露+vlog 10.m1 2代表把1的植物移动到2           "
+        self.play_prompt = "1.输入“签到”领阳光  2.输入“查询”查询阳光  3.输入“入座x路”入座,消耗500阳光，输一局扣300阳光  4.输入“离座”离座  5.输入p+数字放置随机礼盒消耗100阳光   6.t+数字铲除植物  7.五个点赞一列普通僵尸,一个点赞加十阳光，B站点赞上限1000  8.在右置位入座的输入z+数字放置僵尸 9.点个关注呗，目标1万粉露+vlog 10.m1 2代表把1的植物移动到2             "
         # self.play_prompt = "1.输入“签到”领阳光  2.输入“查询”查询阳光  3.输入“入座x路”入座  4.输入“离座”离座  5.h+数字放置礼盒  6.以“清哥”开头有回应  7.t+数字更换植物  8.僵尸需要礼物触发  9.一个点赞5阳光，5个点赞放置一波僵尸最高点赞1000次  10.僵尸触发挡位为每增加1电池，放置越高级的僵尸  11.僵尸组直接输入字母就行  12.僵尸组的获胜奖励开发中。。。             "
         label_2 = tk.Label(root_1,text=self.play_prompt,font=("Microsoft YaHei", 25,"bold"),fg='#ff0475',bg="#ffaef1")
         label_2.place(relx = 0.5,y = 28,anchor='center')
@@ -168,9 +168,14 @@ class Show_Text:
                 row = digist[0]
                 if self.road_dict[row]["text"] not in self.usr_dict:
                     remain_sun = self.blive_usr.search_usr(openid)
+                    if remain_sun <500:
+                        self.maintext_queue.put(f"{usr}\n阳光不足入座")
+                        return
+                    remain_sun-=500
+                    self.blive_usr.update_data(openid,remain_sun)
                     self.change_text(self.road_dict[row]["label"],f"{usr}\n阳光:{remain_sun}")
                     self.road_dict[row]["text"] = usr
-                    self.maintext_queue.put(f"{usr}\n入座成功，输入“离座”离开")
+                    self.maintext_queue.put(f"{usr}\n消耗500阳光入座，输入“离座”离开")
                     self.usr_dict[usr] = row
                     self.usr_openid[usr] = openid
                 else:

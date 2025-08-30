@@ -102,12 +102,16 @@ class BiliClient:
      # 发送游戏心跳
     async def appheartBeat(self):
         while True:
-            await asyncio.ensure_future(asyncio.sleep(20))
-            postUrl = "%s/v2/app/heartbeat" % self.host
-            params = '{"game_id":"%s"}' % (self.gameId)
-            headerMap = self.sign(params)
-            r = requests.post(url=postUrl, headers=headerMap,
-                            data=params) # verify=False
+            try:
+                await asyncio.ensure_future(asyncio.sleep(15))
+                postUrl = "%s/v2/app/heartbeat" % self.host
+                params = '{"game_id":"%s"}' % (self.gameId)
+                headerMap = self.sign(params)
+                r = requests.post(url=postUrl, headers=headerMap,
+                                data=params) # verify=False
+            except Exception as e:
+                print(f"apphearBeat error{e}")
+                await asyncio.sleep(1)
             # raise Exception("error test")
             # data = json.loads(r.content)
             # print("[BiliClient] send appheartBeat success")
@@ -131,11 +135,15 @@ class BiliClient:
     # 发送心跳
     async def heartBeat(self, websocket):
         while True:
-            await asyncio.ensure_future(asyncio.sleep(20))
-            req = proto.Proto()
-            req.op = 2
+            try:
+                await asyncio.ensure_future(asyncio.sleep(15))
+                req = proto.Proto()
+                req.op = 2
 
-            await websocket.send(req.pack())
+                await websocket.send(req.pack())
+            except Exception as e:
+                print(f"hearBeat error:{e}")
+                await asyncio.sleep(1)
             # print("[BiliClient] send heartBeat success")
 
     # 读取信息
