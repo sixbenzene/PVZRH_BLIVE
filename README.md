@@ -1,7 +1,7 @@
 # PVZRH_BLIVE ![License](https://img.shields.io/badge/license-GPL-yellow)![Language](https://img.shields.io/badge/language-Python-brightgreen) 
 ✏️与PVZ融合版结合，专为bilibili直播打造的弹幕互动玩法🥳  
 😜想要查看效果，关注直播间：http://live.bilibili.com/4638098  
-放一张直播图：![Screenshot 2024-12-14 17-28-43](https://github.com/user-attachments/assets/8bd1723b-9a46-4a68-83f3-09ce2da8d750)
+放一张直播图：![Screenshot 2024-12-14 17-28-43](./image/Screenshot_2025-08-30_16-22-08.png)
 
 ### 功能介绍
 - 可实现功能：修改阳光，修改放置的植物id，放置植物/僵尸，铲除、更换植物，入座系统，阳光存储系统，签到系统。
