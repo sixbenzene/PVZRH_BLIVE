@@ -190,7 +190,7 @@ class Interface:
         self.clock = pygame.time.Clock()
         self.rolling_queue = Queue()
         self.rolling_text = RollingText(self.screen)
-        self.announcement = Announcement("输入“签到”领阳光   输入“查询”查询阳光   输入“入座x路”入座,消耗500阳光，输一局扣300阳光     输入“离座”离座   输入p+数字放置随机礼盒消耗100阳光    t+数字铲除植物   50个点赞一列随机僵尸,一个点赞加十阳光，B站点赞上限1000   输入z+数字放置僵尸   m1 2代表把1的植物移动到2     c1代表点击1号格子     以清哥为开头发送弹幕触发清哥助手       求关注！！！！！")
+        self.announcement = Announcement("输入“签到”领阳光   输入“查询”查询阳光   输入“入座x路”入座,消耗500阳光，输一局扣300阳光     输入“离座”离座   输入p+数字放置随机礼盒消耗100阳光    t+数字铲除植物   50个点赞一列随机僵尸,一个点赞加十阳光，B站点赞上限1000      m1 2代表把1的植物移动到2     c1代表点击1号格子     以清哥为开头发送弹幕触发清哥助手       求关注！！！！！")
         # self.test_ann = Announcement("添加功能开发测试中，游玩有可能让您损失阳光，特此告知！！！")
         # self.test_ann.y = 85
         self.ranking_text = RankingAnnouncement("")
