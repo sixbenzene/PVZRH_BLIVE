@@ -1,6 +1,6 @@
 # PVZRH_BLIVE ![License](https://img.shields.io/badge/license-GPL-yellow)![Language](https://img.shields.io/badge/language-Python-brightgreen) 
 ✏️与PVZ融合版结合，专为bilibili直播打造的弹幕互动玩法🥳  
-😜想要查看效果，关注直播间：http://live.bilibili.com/4638098  
+😜想要查看效果，关注直播间：http://live.bilibili.com/4638098 （现在主播转mc直播，项目停止）
 放一张直播图：![Screenshot 2024-12-14 17-28-43](./image/Screenshot_2025-08-30_16-22-08.png)
 
 ### 功能介绍
