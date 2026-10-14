@@ -197,10 +197,10 @@ class BiliClient:
 if __name__ == '__main__':
 
     cli = BiliClient(
-            idCode="E1P62JMCYQRK9",  # 主播身份码
-            appId=1733022254287,  # 应用id/
-            key="LNorYk0KmMbs92lEqgrqC4vz",  # access_key
-            secret="onoCyO99ZidlqqlcBNOnFiSGtdqY85",  # access_key_secret
+            idCode="",  # 主播身份码
+            appId=,  # 应用id/
+            key="",  # access_key
+            secret="",  # access_key_secret
             host="https://live-open.biliapi.com") # 开放平台 (线上环境)
     with cli:
         cli.run()
